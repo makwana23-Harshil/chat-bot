@@ -1,54 +1,54 @@
 import streamlit as st
-import os
-import sys
-
-# FIX for ModuleNotFoundError: Ensure the root is in the path
-sys.path.append(os.path.dirname(__file__))
-
-# Import after path fix
 from src.client import BinanceFuturesClient
-from src.logger import logger
 
-st.set_page_config(page_title="Binance Bot", layout="wide")
+st.title("🏆 Professional Binance Bot")
 
-st.title("⚡ Binance Futures Order Bot")
+# Connect Sidebar
+with st.sidebar:
+    api_key = st.text_input("API Key", type="password")
+    api_secret = st.text_input("Secret Key", type="password")
+    if st.button("Connect"):
+        st.session_state.client = BinanceFuturesClient(api_key, api_secret)
+        st.success("Connected!")
 
-# --- Sidebar Configuration ---
-st.sidebar.header("API Credentials")
-api_key = st.sidebar.text_input("API Key", type="password")
-api_secret = st.sidebar.text_input("Secret Key", type="password")
-use_testnet = st.sidebar.checkbox("Use Testnet", value=True)
-
-if st.sidebar.button("Connect Client"):
-    # This call matches the corrected __init__ in client.py
-    st.session_state.client = BinanceFuturesClient(
-        api_key=api_key, 
-        api_secret=api_secret, 
-        testnet=use_testnet
-    )
-    st.sidebar.success("Client Connected!")
-
-# --- Main App Logic ---
-if "client" in st.session_state and st.session_state.client:
+if "client" in st.session_state:
     client = st.session_state.client
     
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("Place Market Order")
-        symbol = st.text_input("Symbol (e.g., BTCUSDT)", value="BTCUSDT").upper()
+    tab1, tab2, tab3 = st.tabs(["Basic Orders", "Advanced (OCO/TWAP)", "View Logs"])
+
+    with tab1:
+        st.subheader("Market & Limit Orders")
+        symbol = st.text_input("Symbol", "BTCUSDT")
         side = st.selectbox("Side", ["BUY", "SELL"])
-        qty = st.number_input("Quantity", min_value=0.001, step=0.001)
+        o_type = st.selectbox("Type", ["MARKET", "LIMIT"])
+        qty = st.number_input("Quantity", value=0.01)
+        price = st.number_input("Price (Limit only)", value=0.0)
         
-        if st.button("Submit Order"):
-            with st.spinner("Executing..."):
-                res = client.new_order(symbol=symbol, side=side, type="MARKET", quantity=qty)
-                st.write(res)
-                logger.info(f"Order: {side} {qty} {symbol}")
-    
-    with col2:
-        st.subheader("Account Status")
-        if st.button("Refresh Balance"):
-            acc = client.get_account_info()
-            st.json(acc.get("assets", []))
-else:
-    st.info("Please enter API keys and click Connect in the sidebar.")
+        if st.button("Execute Basic Order"):
+            res = client.place_order(symbol, side, o_type, qty, price if o_type == "LIMIT" else None)
+            st.json(res)
+
+    with tab2:
+        st.subheader("Advanced Strategies")
+        strat = st.selectbox("Strategy", ["OCO", "TWAP"])
+        
+        if strat == "OCO":
+            tp = st.number_input("Take Profit Price")
+            sl = st.number_input("Stop Loss Price")
+            if st.button("Place OCO"):
+                st.json(client.place_oco_order(symbol, side, qty, tp, sl))
+        
+        if strat == "TWAP":
+            slices = st.slider("Chunks", 2, 10, 5)
+            wait = st.number_input("Seconds between slices", 10)
+            if st.button("Start TWAP"):
+                client.run_twap(symbol, side, qty, slices, wait)
+                st.success("TWAP Completed!")
+
+    with tab3:
+        st.subheader("bot.log Content")
+        try:
+            with open("bot.log", "r") as f:
+                st.text(f.read()[-2000:]) # Show last 2000 chars
+        except:
+            st.error("Log file not found yet.")
