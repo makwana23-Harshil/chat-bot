@@ -1,45 +1,54 @@
 import streamlit as st
 import os
-from src.client import BinanceFuturesClient # Import your core client
+import sys
 
-st.set_page_config(page_title="Binance Futures Bot", layout="wide")
+# FIX for ModuleNotFoundError: Ensure the root is in the path
+sys.path.append(os.path.dirname(__file__))
 
-st.title("🚀 Binance Futures Trading Dashboard")
+# Import after path fix
+from src.client import BinanceFuturesClient
+from src.logger import logger
 
-# 1. Sidebar for API Configuration
-with st.sidebar:
-    st.header("API Settings")
-    api_key = st.text_input("API Key", type="password")
-    api_secret = st.text_input("Secret Key", type="password")
-    use_testnet = st.checkbox("Use Testnet", value=True)
+st.set_page_config(page_title="Binance Bot", layout="wide")
+
+st.title("⚡ Binance Futures Order Bot")
+
+# --- Sidebar Configuration ---
+st.sidebar.header("API Credentials")
+api_key = st.sidebar.text_input("API Key", type="password")
+api_secret = st.sidebar.text_input("Secret Key", type="password")
+use_testnet = st.sidebar.checkbox("Use Testnet", value=True)
+
+if st.sidebar.button("Connect Client"):
+    # This call matches the corrected __init__ in client.py
+    st.session_state.client = BinanceFuturesClient(
+        api_key=api_key, 
+        api_secret=api_secret, 
+        testnet=use_testnet
+    )
+    st.sidebar.success("Client Connected!")
+
+# --- Main App Logic ---
+if "client" in st.session_state and st.session_state.client:
+    client = st.session_state.client
     
-    if st.button("Connect Client"):
-        st.session_state.client = BinanceFuturesClient(api_key, api_secret, testnet=use_testnet)
-        st.success("Client Connected!")
-
-# 2. Main Trading Interface
-if "client" in st.session_state:
-    tab1, tab2 = st.tabs(["Market/Limit Orders", "Advanced (TWAP/OCO)"])
-
-    with tab1:
-        col1, col2 = st.columns(2)
-        with col1:
-            symbol = st.selectbox("Symbol", ["BTCUSDT", "ETHUSDT", "BNBUSDT"])
-            side = st.radio("Side", ["BUY", "SELL"])
-        with col2:
-            order_type = st.selectbox("Order Type", ["MARKET", "LIMIT"])
-            qty = st.number_input("Quantity", min_value=0.001, step=0.001)
-            price = st.number_input("Price", min_value=0.0) if order_type == "LIMIT" else None
-
-        if st.button("Place Order"):
-            # Calls your core new_order logic
-            response = st.session_state.client.new_order(
-                symbol=symbol, side=side, type=order_type, quantity=qty, price=price
-            )
-            st.json(response) # Show API response
-
-    with tab2:
-        st.subheader("Advanced Order Types (Bonus)")
-        # Add inputs for TWAP or OCO here
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("Place Market Order")
+        symbol = st.text_input("Symbol (e.g., BTCUSDT)", value="BTCUSDT").upper()
+        side = st.selectbox("Side", ["BUY", "SELL"])
+        qty = st.number_input("Quantity", min_value=0.001, step=0.001)
+        
+        if st.button("Submit Order"):
+            with st.spinner("Executing..."):
+                res = client.new_order(symbol=symbol, side=side, type="MARKET", quantity=qty)
+                st.write(res)
+                logger.info(f"Order: {side} {qty} {symbol}")
+    
+    with col2:
+        st.subheader("Account Status")
+        if st.button("Refresh Balance"):
+            acc = client.get_account_info()
+            st.json(acc.get("assets", []))
 else:
-    st.warning("Please connect your API client in the sidebar to start trading.")
+    st.info("Please enter API keys and click Connect in the sidebar.")
