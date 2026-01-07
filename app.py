@@ -101,7 +101,6 @@ if st.session_state.client is None:
             unsafe_allow_html=True
         )
 
-    
     with col2:
         st.title("🏆 Binance Alpha Bot")
         st.subheader("Professional USDT-M Futures Trading")
