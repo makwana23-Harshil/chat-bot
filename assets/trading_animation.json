@@ -1,0 +1,8 @@
+import json
+
+def load_lottie_local(filepath: str):
+    with open(filepath, "r") as f:
+        return json.load(f)
+
+lottie_anim = load_lottie_local("assets/trading_animation.json")
+st_lottie(lottie_anim, height=400)
