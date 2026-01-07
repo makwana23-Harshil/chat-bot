@@ -81,7 +81,7 @@ if st.session_state.client is None:
     #         st.markdown(
     #             "<h2 style='text-align:center;'>OFFLINE MODE ACTIVE</h2>",
     #             unsafe_allow_html=True
-    #         )
+    #        
     with col1:
     if lottie_anim:
         st_lottie(
