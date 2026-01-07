@@ -118,12 +118,37 @@ else:
                 st.success("TWAP Completed!")
 
     with tab3:
-        st.subheader("bot.log Content")
-        try:
-            if os.path.exists("bot.log"):
+        st.subheader("📋 Bot Activity Logs")
+        
+        # 1. Add a "Refresh" button at the top
+        if st.button("🔄 Refresh Logs"):
+            st.rerun()
+
+        # 2. Check if the log file exists
+        if os.path.exists("bot.log"):
+            try:
+                # Read the file and get the last 50 lines
                 with open("bot.log", "r") as f:
-                    st.text(f.read()[-2000:])
-            else:
-                st.warning("Logs will appear here once you make a trade.")
-        except Exception as e:
-            st.error(f"Could not read logs: {e}")
+                    log_lines = f.readlines()
+                
+                if log_lines:
+                    # Join the lines and display them in a clean code block
+                    # newest logs will be at the bottom
+                    recent_logs = "".join(log_lines[-50:])
+                    st.code(recent_logs, language="text", wrap_lines=True)
+                    
+                    # 3. Add a Download button for your assignment report
+                    st.download_button(
+                        label="📥 Download Full Log File for Report",
+                        data="".join(log_lines),
+                        file_name="binance_bot_logs.log",
+                        mime="text/plain"
+                    )
+                else:
+                    st.info("The log file is currently empty. Place an order to see activity!")
+            except Exception as e:
+                st.error(f"Error reading log file: {e}")
+        else:
+            # This shows if the file doesn't exist yet
+            st.warning("⚠️ Log file 'bot.log' has not been created yet.")
+            st.info("The file will be created automatically when the bot attempts its first trade.")
