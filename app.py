@@ -68,19 +68,40 @@ if "client" not in st.session_state:
 # ---------------- LANDING PAGE ----------------
 if st.session_state.client is None:
 
-    col1, col2 = st.columns([1, 1])
+    # col1, col2 = st.columns([1, 1])
+    col1, col2 = st.columns([1.2, 0.8])
 
+
+    # with col1:
+    #     if lottie_anim:
+    #         st_lottie(lottie_anim, height=400, key="trading_anim")
+    #     else:
+    #         st.markdown("<div style='height:100px'></div>", unsafe_allow_html=True)
+    #         st.markdown("<div class='binance-icon'>₿</div>", unsafe_allow_html=True)
+    #         st.markdown(
+    #             "<h2 style='text-align:center;'>OFFLINE MODE ACTIVE</h2>",
+    #             unsafe_allow_html=True
+    #         )
     with col1:
-        if lottie_anim:
-            st_lottie(lottie_anim, height=400, key="trading_anim")
-        else:
-            st.markdown("<div style='height:100px'></div>", unsafe_allow_html=True)
-            st.markdown("<div class='binance-icon'>₿</div>", unsafe_allow_html=True)
-            st.markdown(
-                "<h2 style='text-align:center;'>OFFLINE MODE ACTIVE</h2>",
-                unsafe_allow_html=True
-            )
+    if lottie_anim:
+        st_lottie(
+            lottie_anim,
+            speed=1,
+            loop=True,
+            quality="high",
+            height=300,
+            width=300,
+            key="trading_anim"
+        )
+    else:
+        st.markdown("<div style='height:100px'></div>", unsafe_allow_html=True)
+        st.markdown("<div class='binance-icon'>₿</div>", unsafe_allow_html=True)
+        st.markdown(
+            "<h2 style='text-align:center;'>OFFLINE MODE ACTIVE</h2>",
+            unsafe_allow_html=True
+        )
 
+    
     with col2:
         st.title("🏆 Binance Alpha Bot")
         st.subheader("Professional USDT-M Futures Trading")
