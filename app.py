@@ -1,203 +1,143 @@
-# -*- coding: utf-8 -*-
-
 import streamlit as st
-import requests
 import os
-import json
-from streamlit_lottie import st_lottie
 from src.client import BinanceFuturesClient
 
-# 1. Page Configuration
+# ---------------- PAGE CONFIG ----------------
 st.set_page_config(
     page_title="Binance Alpha Bot",
     layout="wide",
     page_icon="🤖"
 )
 
-# 2. Professional CSS Styling (Binance Theme)
+# ---------------- CSS ----------------
 st.markdown("""
 <style>
 .stButton>button {
     width: 100%;
-    border-radius: 5px;
+    border-radius: 6px;
     height: 3em;
     background-color: #f0b90b;
     color: black;
     font-weight: bold;
 }
 
-.stTextInput>div>div>input {
-    color: #f0b90b;
-}
-
 .main {
     background-color: #0e1117;
 }
 
-.binance-icon {
-    background-color: #f0b90b;
-    color: red;
-    width: 150px;
-    height: 150px;
-    line-height: 150px;
-    border-radius: 20%;
+.card {
+    background: #111827;
+    padding: 20px;
+    border-radius: 12px;
     text-align: center;
-    font-size: 80px;
-    font-weight: bold;
-    margin: auto;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# 3. Helper for Local Animation
-def load_lottie_local(filepath: str):
-    try:
-        if os.path.exists(filepath):
-            with open(filepath, "r", encoding="utf-8") as f:
-                return json.load(f)
-        return None
-    except Exception:
-        return None
-
-lottie_anim = load_lottie_local("src/animation.json")
-
-# 4. App Logic
+# ---------------- SESSION STATE ----------------
 if "client" not in st.session_state:
     st.session_state.client = None
 
-# ---------------- LANDING PAGE ----------------
+# ================= LANDING PAGE =================
 if st.session_state.client is None:
 
-    # col1, col2 = st.columns([1, 1])
     col1, col2 = st.columns([1.2, 0.8])
 
-
-  safe_allow_html=True
-
+    # -------- LEFT COLUMN (IMAGE) --------
     with col1:
-        if lottie_anim:
-            st_lottie(
-                lottie_anim,
-                speed=1,
-                loop=True,
-                quality="high",
-                height=300,
-                width=300,
-                key="trading_anim"
-            )
-        else:
-            st.markdown("<div style='height:100px'></div>", unsafe_allow_html=True)
-            st.markdown("<div class='binance-icon'>₿</div>", unsafe_allow_html=True)
-            st.markdown(
-                "<h2 style='text-align:center;'>OFFLINE MODE ACTIVE</h2>",
-                unsafe_allow_html=True
-            )
+        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        st.image("assets/logo.png", width=280)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # -------- RIGHT COLUMN (LOGIN) --------
     with col2:
         st.title("🏆 Binance Alpha Bot")
         st.subheader("Professional USDT-M Futures Trading")
 
         with st.container(border=True):
-            st.info("🔐 Enter API Credentials to Unlock Dashboard")
+            st.info("🔐 Enter API Credentials")
 
-            key_input = st.text_input("API Key", type="password")
-            secret_input = st.text_input("API Secret", type="password")
-            t_net = st.toggle("Use Testnet", value=True)
+            api_key = st.text_input("API Key", type="password")
+            api_secret = st.text_input("API Secret", type="password")
+            testnet = st.toggle("Use Testnet", value=True)
 
             if st.button("Initialize Secure Session"):
-                if key_input and secret_input:
+                if api_key and api_secret:
                     st.session_state.client = BinanceFuturesClient(
-                        key_input,
-                        secret_input,
-                        testnet=t_net
+                        api_key,
+                        api_secret,
+                        testnet=testnet
                     )
                     st.rerun()
                 else:
-                    st.error("❌ Missing Credentials")
+                    st.error("❌ Please enter API Key and Secret")
 
-# ---------------- DASHBOARD ----------------
+# ================= DASHBOARD =================
 else:
+    client = st.session_state.client
 
+    # -------- SIDEBAR --------
     with st.sidebar:
         st.success("✅ Session Active")
         if st.button("Disconnect Bot"):
             st.session_state.client = None
             st.rerun()
 
-    client = st.session_state.client
-
     tab1, tab2, tab3 = st.tabs(
-        ["Basic Orders", "Advanced (OCO/TWAP)", "View Logs"]
+        ["📈 Basic Orders", "⚙️ Advanced Orders", "📋 Logs"]
     )
 
-    # -------- TAB 1 --------
-    with col1:
-        if lottie_anim:
-            st_lottie(
-                lottie_anim,
-                speed=1,
-                loop=True,
-                quality="high",
-                height=300,
-                width=300,
-                key="trading_anim"
-            )
-        else:
-            st.markdown("<div style='height:100px'></div>", unsafe_allow_html=True)
-            st.markdown("<div class='binance-icon'>₿</div>", unsafe_allow_html=True)
-            st.markdown(
-                "<h2 style='text-align:center;'>OFFLINE MODE ACTIVE</h2>",
-                unsafe_allow_html=True
-            )
+    # -------- TAB 1: BASIC ORDERS --------
+    with tab1:
+        st.subheader("Market & Limit Orders")
 
-    # -------- TAB 2 --------
+        symbol = st.text_input("Symbol", "BTCUSDT")
+        side = st.selectbox("Side", ["BUY", "SELL"])
+        order_type = st.selectbox("Order Type", ["MARKET", "LIMIT"])
+        quantity = st.number_input("Quantity", value=0.01)
+        price = st.number_input("Price (Limit only)", value=0.0)
+
+        if st.button("Place Order"):
+            response = client.place_order(
+                symbol,
+                side,
+                order_type,
+                quantity,
+                price if order_type == "LIMIT" else None
+            )
+            st.json(response)
+
+    # -------- TAB 2: ADVANCED --------
     with tab2:
         st.subheader("Advanced Strategies")
 
-        strat = st.selectbox("Strategy", ["OCO", "TWAP"])
+        strategy = st.selectbox("Strategy", ["OCO", "TWAP"])
 
-        if strat == "OCO":
-            tp = st.number_input("Take Profit Price")
-            sl = st.number_input("Stop Loss Price")
+        if strategy == "OCO":
+            take_profit = st.number_input("Take Profit Price")
+            stop_loss = st.number_input("Stop Loss Price")
 
-            if st.button("Place OCO"):
-                st.json(
-                    client.place_oco_order(symbol, side, qty, tp, sl)
+            if st.button("Place OCO Order"):
+                result = client.place_oco_order(
+                    symbol, side, quantity, take_profit, stop_loss
                 )
+                st.json(result)
 
-        if strat == "TWAP":
-            slices = st.slider("Chunks", 2, 10, 5)
-            wait = st.number_input("Seconds between slices", 10)
+        if strategy == "TWAP":
+            slices = st.slider("Order Chunks", 2, 10, 5)
+            delay = st.number_input("Delay (seconds)", 10)
 
             if st.button("Start TWAP"):
-                client.run_twap(symbol, side, qty, slices, wait)
-                st.success("✅ TWAP Completed!")
+                client.run_twap(symbol, side, quantity, slices, delay)
+                st.success("✅ TWAP Completed")
 
-    # -------- TAB 3 --------
+    # -------- TAB 3: LOGS --------
     with tab3:
-        st.subheader("📋 Bot Activity Logs")
-
-        if st.button("🔄 Refresh Logs"):
-            st.rerun()
+        st.subheader("Bot Activity Logs")
 
         if os.path.exists("bot.log"):
-            try:
-                with open("bot.log", "r", encoding="utf-8") as f:
-                    log_lines = f.readlines()
-
-                if log_lines:
-                    recent_logs = "".join(log_lines[-50:])
-                    st.code(recent_logs, language="text", wrap_lines=True)
-
-                    st.download_button(
-                        label="📥 Download Full Log File",
-                        data="".join(log_lines),
-                        file_name="binance_bot_logs.log",
-                        mime="text/plain"
-                    )
-                else:
-                    st.info("ℹ️ Log file is empty.")
-
-            except Exception as e:
-                st.error(f"Error reading log file: {e}")
+            with open("bot.log", "r") as f:
+                logs = f.read()
+            st.code(logs, language="text")
         else:
-            st.warning("⚠️ Log file 'bot.log' not found.")
+            st.warning("⚠️ No log file found")
