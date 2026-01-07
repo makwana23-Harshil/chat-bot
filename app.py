@@ -46,7 +46,7 @@ if st.session_state.client is None:
     # -------- LEFT COLUMN (IMAGE) --------
     with col1:
         st.markdown("<div class='card'>", unsafe_allow_html=True)
-        st.image("assets/download.png", width=280)
+        st.image("assets/download.png", width=380)
         st.markdown("</div>", unsafe_allow_html=True)
 
     # -------- RIGHT COLUMN (LOGIN) --------
