@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import os
+import json # Added as requested
 from streamlit_lottie import st_lottie
 from src.client import BinanceFuturesClient
 
@@ -27,17 +28,16 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 3. Improved Helper for Animation (With Safety Checks)
-def load_lottieurl(url: str):
+# 3. Helper for Local Animation (Changed from URL to Local)
+def load_lottie_local(filepath: str):
     try:
-        r = requests.get(url, timeout=5) # Added timeout to prevent hanging
-        if r.status_code != 200:
-            return None
-        return r.json()
+        with open(filepath, "r") as f:
+            return json.load(f)
     except Exception:
         return None
 
-lottie_anim = load_lottieurl("https://lottie.host/80613204-747d-411e-84b2-06e987c8835c/1Y5X1v6K0G.json")
+# Load from your local project folder (Requirement for stability)
+lottie_anim = load_lottie_local("src/animation.json") 
 
 # 4. App Logic
 if "client" not in st.session_state:
@@ -48,14 +48,13 @@ if st.session_state.client is None:
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        # FIX: Only call st_lottie if lottie_anim is NOT None
+        # Improved UI Logic with local fallback
         if lottie_anim:
             st_lottie(lottie_anim, height=400, key="trading_anim")
         else:
-            # Fallback if the animation fails to load
+            # If the local file is missing, show the Binance logo
             st.image("https://bin.bnbstatic.com/static/images/common/og_logo.png", width=300)
-            st.warning("Running in limited UI mode (Animation could not be loaded).")
-    
+
     with col2:
         st.write("") # Spacing
         st.title("🏆 Binance Alpha Bot")
@@ -69,7 +68,6 @@ if st.session_state.client is None:
             
             if st.button("Initialize Secure Session"):
                 if key_input and secret_input:
-                    # Initialize the client
                     st.session_state.client = BinanceFuturesClient(key_input, secret_input, testnet=t_net)
                     st.rerun()
                 else:
@@ -77,7 +75,6 @@ if st.session_state.client is None:
 
 # --- SHOW FULL DASHBOARD IF CONNECTED ---
 else:
-    # Sidebar Logout Option
     with st.sidebar:
         st.success("✅ Session Active")
         if st.button("Disconnect Bot"):
@@ -119,25 +116,17 @@ else:
 
     with tab3:
         st.subheader("📋 Bot Activity Logs")
-        
-        # 1. Add a "Refresh" button at the top
         if st.button("🔄 Refresh Logs"):
             st.rerun()
 
-        # 2. Check if the log file exists
         if os.path.exists("bot.log"):
             try:
-                # Read the file and get the last 50 lines
                 with open("bot.log", "r") as f:
                     log_lines = f.readlines()
                 
                 if log_lines:
-                    # Join the lines and display them in a clean code block
-                    # newest logs will be at the bottom
                     recent_logs = "".join(log_lines[-50:])
                     st.code(recent_logs, language="text", wrap_lines=True)
-                    
-                    # 3. Add a Download button for your assignment report
                     st.download_button(
                         label="📥 Download Full Log File for Report",
                         data="".join(log_lines),
@@ -145,10 +134,8 @@ else:
                         mime="text/plain"
                     )
                 else:
-                    st.info("The log file is currently empty. Place an order to see activity!")
+                    st.info("The log file is currently empty.")
             except Exception as e:
                 st.error(f"Error reading log file: {e}")
         else:
-            # This shows if the file doesn't exist yet
             st.warning("⚠️ Log file 'bot.log' has not been created yet.")
-            st.info("The file will be created automatically when the bot attempts its first trade.")
