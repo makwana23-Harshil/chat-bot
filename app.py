@@ -27,11 +27,15 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 3. Helper for Animation
+# 3. Improved Helper for Animation (With Safety Checks)
 def load_lottieurl(url: str):
-    r = requests.get(url)
-    if r.status_code != 200: return None
-    return r.json()
+    try:
+        r = requests.get(url, timeout=5) # Added timeout to prevent hanging
+        if r.status_code != 200:
+            return None
+        return r.json()
+    except Exception:
+        return None
 
 lottie_anim = load_lottieurl("https://lottie.host/80613204-747d-411e-84b2-06e987c8835c/1Y5X1v6K0G.json")
 
@@ -44,7 +48,13 @@ if st.session_state.client is None:
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        st_lottie(lottie_anim, height=400, key="trading_anim")
+        # FIX: Only call st_lottie if lottie_anim is NOT None
+        if lottie_anim:
+            st_lottie(lottie_anim, height=400, key="trading_anim")
+        else:
+            # Fallback if the animation fails to load
+            st.image("https://bin.bnbstatic.com/static/images/common/og_logo.png", width=300)
+            st.warning("Running in limited UI mode (Animation could not be loaded).")
     
     with col2:
         st.write("") # Spacing
@@ -74,7 +84,6 @@ else:
             st.session_state.client = None
             st.rerun()
 
-    # YOUR ORIGINAL TRADING CODE STARTS HERE
     client = st.session_state.client
     
     tab1, tab2, tab3 = st.tabs(["Basic Orders", "Advanced (OCO/TWAP)", "View Logs"])
