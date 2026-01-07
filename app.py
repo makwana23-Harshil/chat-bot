@@ -131,24 +131,24 @@ else:
     )
 
     # -------- TAB 1 --------
-    with tab1:
-        st.subheader("Market & Limit Orders")
-
-        symbol = st.text_input("Symbol", "BTCUSDT")
-        side = st.selectbox("Side", ["BUY", "SELL"])
-        o_type = st.selectbox("Type", ["MARKET", "LIMIT"])
-        qty = st.number_input("Quantity", value=0.01)
-        price = st.number_input("Price (Limit only)", value=0.0)
-
-        if st.button("Execute Basic Order"):
-            res = client.place_order(
-                symbol,
-                side,
-                o_type,
-                qty,
-                price if o_type == "LIMIT" else None
+    with col1:
+        if lottie_anim:
+            st_lottie(
+                lottie_anim,
+                speed=1,
+                loop=True,
+                quality="high",
+                height=300,
+                width=300,
+                key="trading_anim"
             )
-            st.json(res)
+        else:
+            st.markdown("<div style='height:100px'></div>", unsafe_allow_html=True)
+            st.markdown("<div class='binance-icon'>₿</div>", unsafe_allow_html=True)
+            st.markdown(
+                "<h2 style='text-align:center;'>OFFLINE MODE ACTIVE</h2>",
+                unsafe_allow_html=True
+            )
 
     # -------- TAB 2 --------
     with tab2:
