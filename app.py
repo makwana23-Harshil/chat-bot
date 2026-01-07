@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 import os
-import json # Added as requested
+import json
 from streamlit_lottie import st_lottie
 from src.client import BinanceFuturesClient
 
@@ -25,18 +25,32 @@ st.markdown("""
     .main {
         background-color: #0e1117;
     }
+    /* Professional Offline Header Icon */
+    .binance-icon {
+        background-color: #f0b90b;
+        color: black;
+        width: 150px;
+        height: 150px;
+        line-height: 150px;
+        border-radius: 20%;
+        text-align: center;
+        font-size: 80px;
+        font-weight: bold;
+        margin: auto;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. Helper for Local Animation (Changed from URL to Local)
+# 3. Helper for Local Animation
 def load_lottie_local(filepath: str):
     try:
-        with open(filepath, "r") as f:
-            return json.load(f)
+        if os.path.exists(filepath):
+            with open(filepath, "r") as f:
+                return json.load(f)
+        return None
     except Exception:
         return None
 
-# Load from your local project folder (Requirement for stability)
 lottie_anim = load_lottie_local("src/animation.json") 
 
 # 4. App Logic
@@ -48,15 +62,16 @@ if st.session_state.client is None:
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        # Improved UI Logic with local fallback
         if lottie_anim:
             st_lottie(lottie_anim, height=400, key="trading_anim")
         else:
-            # If the local file is missing, show the Binance logo
-            st.image("https://bin.bnbstatic.com/static/images/common/og_logo.png", width=300)
+            # INTERNET-FREE HEADER (Fixes your missing image issue)
+            st.markdown('<div style="height: 100px;"></div>', unsafe_allow_html=True)
+            st.markdown('<div class="binance-icon">₿</div>', unsafe_allow_html=True)
+            st.markdown('<h2 style="text-align:center;">OFFLINE MODE ACTIVE</h2>', unsafe_allow_html=True)
 
     with col2:
-        st.write("") # Spacing
+        st.write("") 
         st.title("🏆 Binance Alpha Bot")
         st.subheader("Professional USDT-M Futures Trading")
         
