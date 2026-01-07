@@ -36,7 +36,7 @@ st.markdown("""
 
 .binance-icon {
     background-color: #f0b90b;
-    color: black;
+    color: red;
     width: 150px;
     height: 150px;
     line-height: 150px;
