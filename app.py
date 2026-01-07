@@ -82,24 +82,29 @@ if st.session_state.client is None:
     #             "<h2 style='text-align:center;'>OFFLINE MODE ACTIVE</h2>",
     #             unsafe_allow_html=True
     #        
+    # with col1:
+    #     if lottie_anim:
+    #         st_lottie(
+    #             lottie_anim,
+    #             speed=1,
+    #             loop=True,
+    #             quality="high",
+    #             height=300,
+    #             width=300,
+    #             key="trading_anim"
+    #         )
+    #     else:
+    #         st.markdown("<div style='height:100px'></div>", unsafe_allow_html=True)
+    #         st.markdown("<div class='binance-icon'>₿</div>", unsafe_allow_html=True)
+    #         st.markdown(
+    #             "<h2 style='text-align:center;'>OFFLINE MODE ACTIVE</h2>",
+    #             unsafe_allow_html=True
+    #         )
     with col1:
-        if lottie_anim:
-            st_lottie(
-                lottie_anim,
-                speed=1,
-                loop=True,
-                quality="high",
-                height=300,
-                width=300,
-                key="trading_anim"
-            )
-        else:
-            st.markdown("<div style='height:100px'></div>", unsafe_allow_html=True)
-            st.markdown("<div class='binance-icon'>₿</div>", unsafe_allow_html=True)
-            st.markdown(
-                "<h2 style='text-align:center;'>OFFLINE MODE ACTIVE</h2>",
-                unsafe_allow_html=True
-            )
+        st.image(
+            "assets/logo.png",
+            width=300
+        )
 
     with col2:
         st.title("🏆 Binance Alpha Bot")
