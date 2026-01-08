@@ -1,57 +1,41 @@
-# Binance Futures Testnet Trading Bot
+Binance Futures Testnet Trading Bot
 
-A Python-based trading bot for Binance USDT-M Futures Testnet with support for multiple order types.
+A Python trading bot built for the Binance USDT-M Futures Testnet. It handles multiple order types, so you can test out your strategies without risking real money.
 
-## 🚀 Quick Start
+Quick Start
 
-### Prerequisites
-- Python 3.8+
-- Binance Testnet account
-- API credentials from Binance Testnet
+What you’ll need:
+- Python 3.8 or higher
+- A Binance Testnet account
+- Your Binance Testnet API credentials
 
-### Installation
+How to set it up:
 
-1. **Clone the repository:**
-```bash
-git clone <https://github.com/makwana23-Harshil/chat-bot>
+1. Clone the repo:
+git clone https://github.com/makwana23-Harshil/chat-bot
 cd [chat-bot]_binance_bot
-```
-2, Install dependencies:
-bash
-Copy
+
+2. Install the dependencies:
 pip install -r requirements.txt
 
-3.Configure API credentials:
-🔑 Getting API Keys for Binance Testnet
-Step 1: Register on Binance Testnet
-Visit Binance Testnet
-Sign up with your email
-  Complete the verification process
-Step 2: Generate API Credentials
-Log into your Testnet account
-Go to API Management → Create API
-Enter a label (e.g., "Trading Bot")
-IMPORTANT: Copy and save both:
-API Key
-Secret Key
-Step 3: Configure Your Bot
-bash
-Copy
-# 1. Copy the example environment file
-cp .env.example .env
+3. Set up your API keys:
+First, grab your keys from the Binance Testnet.
+- Register at the Binance Testnet site.
+- Sign up with your email, finish the verification.
+- After logging in, head to API Management and create a new API.
+- Name it something like “Trading Bot.”
+- Copy your API Key and Secret Key somewhere safe. You’ll need both.
 
-# 2. Edit .env file with your credentials
-nano .env  # or use any text editor
-Add your credentials:
-
-Copy and paste here 
+Now, configure the bot:
+- Copy the example environment file: cp .env.example .env
+- Open .env in your favorite editor.
+- Paste your API credentials in, like this:
 API_KEY=your_testnet_api_key_here
 API_SECRET=your_testnet_secret_key_here
 TESTNET=true
 
-the main file is app.py so run it 
-Security note:
-API credentials are loaded via enviroment variables and are not committed to the repository.
+To run the bot, just launch app.py.
 
-"""NOTE THAT"""
-This project uses Binance Futures Testnet Only.No real funds are involved.
+A quick heads-up: The bot pulls your API keys from environment variables, so you never commit sensitive info to the repo.
+
+And remember—this bot only works with the Binance Futures Testnet. No real money on the line here. Enjoy experimenting!
